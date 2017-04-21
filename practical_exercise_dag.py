@@ -4,8 +4,7 @@ from datetime import datetime, timedelta
 
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime.now() -
-                  timedelta(minutes=1),
+    'start_date': datetime.now() - timedelta(minutes=1),
     'email': [],
     'email_on_failure': False,
     'email_on_retry': False,
