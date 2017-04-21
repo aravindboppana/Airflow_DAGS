@@ -32,15 +32,6 @@ start_date=datetime.now() - timedelta(minutes=1))
 
 
 
-start_metastore = BashOperator(
-
-task_id='start_metastore',
-
-bash_command="""nohup sqoop metastore &  """,
-
-dag=dag)
-
-
 create_database_in_hive = BashOperator(
 
 task_id='create_database_in_hive',
@@ -58,8 +49,5 @@ bash_command="""sqoop job --meta-connect jdbc:hsqldb:hsql://localhost:16000/sqoo
 
 dag=dag)
 
-
-
-start_metastore.set_downstream(create_database_in_hive)
 create_database_in_hive.set_downstream(create_activitylog)
 
