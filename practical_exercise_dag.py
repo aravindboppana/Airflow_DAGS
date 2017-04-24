@@ -11,7 +11,7 @@ default_args = {
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
 }
-dag = DAG('practical_exercise_dag',
+dag = DAG('practical_exercise_updated_dag',
           default_args=default_args, schedule_interval=None,
           start_date=datetime.now() - timedelta(minutes=1))
 load_data = BashOperator(
@@ -21,10 +21,9 @@ load_data = BashOperator(
 
 create_csv = BashOperator(
     task_id='create_csv',
-    bash_command="""
-    cd /home/cloudera/airflow/dags/
-    pwd
-    python practical_exercise_data_generator.py --create_csv """,
+    bash_command="""python /home/cloudera/airflow/dags/practical_exercise_data_generator.py --create_csv
+    mv user_upload_dump.*.csv /home/cloudera/airflow/dags/csv_files/user_upload_dump.$(date +%s)
+ """,
     dag=dag)
 user_import = BashOperator(
     task_id='user_import',
@@ -34,13 +33,11 @@ activitylog_import = BashOperator(
     task_id='activitylog_import',
     bash_command="""sqoop job --meta-connect jdbc:hsqldb:hsql://localhost:16000/sqoop --exec hive.activitylog """,
     dag=dag)
-rename_csv = BashOperator(
-    task_id='rename_csv',
-    bash_command="""mv /home/cloudera/airflow/dags/user_upload_dump.*.csv /home/cloudera/airflow/dags/user_upload_dump.$(date +%s) """,
-    dag=dag)
 csv_into_hdfs = BashOperator(
     task_id='csv_into_hdfs',
-    bash_command="""hadoop fs -put $(ls -t | head -1) /user/cloudera/csv_files """,
+    bash_command="""hadoop fs -put /home/cloudera/airflow/dags/csv_files/user_upload_dump.* /user/cloudera/csv_files
+                    mv /home/cloudera/airflow/dags/csv_files/user_upload_dump.* /home/cloudera/airflow/dags/saved_csv
+                    rm -f /home/cloudera/airflow/dags/csv_files/user_upload_dump.*  """,
     dag=dag)
 create_user_report = BashOperator(
     task_id='create_user_report',
@@ -75,5 +72,4 @@ create_user_report.set_downstream(load_user_report)
 csv_into_hdfs.set_downstream(load_user_report)
 create_user_total.set_downstream(load_user_total)
 create_csv.set_downstream(create_external_table_csv)
-create_external_table_csv.set_downstream(rename_csv)
-rename_csv.set_downstream(csv_into_hdfs)
+create_external_table_csv.set_downstream(csv_into_hdfs)
