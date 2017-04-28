@@ -35,8 +35,8 @@ activitylog_import = BashOperator(
     dag=dag)
 csv_into_hdfs = BashOperator(
     task_id='csv_into_hdfs',
-    bash_command="""hadoop fs -put /home/cloudera/airflow/dags/csv_files/user_upload_dump.* /user/cloudera/csv_files
-                    mv /home/cloudera/airflow/csv_files/user_upload_dump.* /home/cloudera/airflow/saved_csv """,
+    bash_command="""hadoop fs -put /home/cloudera/airflow/csv_files/user_upload_dump.* /user/cloudera/csv_files
+                                mv /home/cloudera/airflow/csv_files/user_upload_dump.* /home/cloudera/airflow/saved_csv """,
     dag=dag)
 create_user_report = BashOperator(
     task_id='create_user_report',
